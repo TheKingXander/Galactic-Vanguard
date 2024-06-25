@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú del Juego</title>
+</head>
+<body>
+    <audio id="backgroundMusic">
+        <source src="sound/menu.wav" type="audio/wav">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
+
+    <div class="menu-container">
+        <!-- Aquí van los botones y otros elementos del menú -->
+    </div>
+
+    <script>
+        // Esperar 2 segundos y luego reproducir el audio
+        setTimeout(function() {
+            const audio = document.getElementById('backgroundMusic');
+            audio.play();
+        }, 2000); // 2000 milisegundos = 2 segundos
+    </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casillero de Personajes</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: url('fondo.png') no-repeat center center fixed;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .character-box {
+            display: inline-block;
+            width: 120px;
+            height: 120px;
+            margin-right: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .character-box:hover {
+            border-color: #007bff;
+        }
+
+        .character-box img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="character-box" onclick="selectCharacter('niño.png')">
+            <img src="niño.png" alt="Niño">
+            <p>Niño</p>
+        </div>
+        <div class="character-box" onclick="selectCharacter('niño2.png')">
+            <img src="niño2.png" alt="Niño 2">
+            <p>Niño 2</p>
+        </div>
+        <div class="character-box" onclick="selectCharacter('niño3.png')">
+            <img src="niño3.png" alt="Niño 3">
+            <p>Niño 3</p>
+        </div>
+        <div class="character-box" onclick="selectCharacter('niña.png')">
+            <img src="niña.png" alt="Niña">
+            <p>Niña</p>
+        </div>
+        <div class="character-box" onclick="selectCharacter('niña2.png')">
+            <img src="niña2.png" alt="Niña 2">
+            <p>Niña 2</p>
+        </div>
+        <!-- Agrega más personajes según sea necesario -->
+    </div>
+
+    <script>
+        function selectCharacter(character) {
+            // Al seleccionar un personaje, guardar en localStorage
+            localStorage.setItem('selectedCharacter', character);
+            // Redirigir a la página de menú después de seleccionar
+            window.location.href = 'menu.html';
+        }
+    </script>
+</body>
+</html>

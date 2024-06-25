@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Niños y Aliens</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: url('fondo.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+        }
+        /* Estilos adicionales según tu juego */
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            let player = {
+                x: canvas.width / 2,
+                y: canvas.height - 50,
+                size: 30,
+                image: new Image()
+            };
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const character = urlParams.get('character');
+
+            if (character) {
+                player.image.src = character;
+            } else {
+                // Por defecto, si no se seleccionó ningún personaje
+                player.image.src = 'niño.png'; // Puedes cambiar esto al personaje por defecto que desees
+            }
+
+            player.image.onload = function () {
+                // Aquí configura el juego con el personaje seleccionado
+                // Por ejemplo, puedes empezar a dibujar el jugador:
+                ctx.drawImage(player.image, player.x - player.size, player.y - player.size, player.size * 2, player.size * 2);
+            };
+
+            // Aquí continua con el resto del juego
+            // Por ejemplo, la lógica de actualización y dibujo del juego
+        });
+    </script>
+</body>
+</html>

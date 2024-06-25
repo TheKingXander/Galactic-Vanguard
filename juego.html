@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Niños y Aliens</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: url('imagen.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            background: transparent;
+        }
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 24px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+        #pauseButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            z-index: 100;
+        }
+        #powerUpBarContainer {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 200px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            z-index: 100;
+        }
+        #powerUpBar {
+            width: 0;
+            height: 100%;
+            background: green;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            z-index: 200;
+            display: none;
+        }
+        .overlay.active {
+            display: flex;
+        }
+        .overlay-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 0 10px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Puntos: 0</div>
+    <img id="pauseButton" src="pausa.png" alt="Pausar">
+    <div id="powerUpBarContainer">
+        <div id="powerUpBar"></div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="overlay" class="overlay">
+        <div class="overlay-content">
+            <h2>¡Has Muerto!</h2>
+            <p>Total de Puntos: <span id="finalScore">0</span></p>
+            <div class="button-container">
+                <button class="button" id="retryButton">Volver a Jugar</button>
+                <button class="button" id="menuButton">Volver al Menú</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        const pauseButton = document.getElementById('pauseButton');
+        const powerUpBar = document.getElementById('powerUpBar');
+        const overlay = document.getElementById('overlay');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const retryButton = document.getElementById('retryButton');
+
+        let score = 0;
+        let isPaused = false;
+        let powerUp = 0;
+        const powerUpThreshold = 1000;
+        let aliensSpeed = 1.2; // Velocidad inicial de los aliens
+        const alienSpeedIncrement = 0.1; // Incremento de velocidad por nivel
+        const gemChance = 0.05;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height - 50,
+            size: 30,
+            image: new Image()
+        };
+
+        // Obtener el personaje seleccionado de localStorage
+        const selectedCharacter = localStorage.getItem('selectedCharacter');
+        if (selectedCharacter) {
+            player.image.src = selectedCharacter;
+        } else {
+            // Manejar el caso donde no se ha seleccionado ningún personaje
+            // Por ejemplo, redirigir nuevamente a casillero.html o establecer un valor por defecto
+            player.image.src = 'niño.png'; // Valor por defecto si no se seleccionó ninguno
+        }
+
+        const alienImage = new Image();
+        alienImage.src = 'alien.png'; // Imagen inicial de los aliens (nivel 1)
+
+        const alien2Image = new Image();
+        alien2Image.src = 'alien2.png'; // Imagen para el siguiente nivel (nivel 2)
+
+        const aliens = [];
+        const bullets = [];
+
+        function drawPlayer() {
+            ctx.drawImage(player.image, player.x - player.size, player.y - player.size, player.size * 2, player.size * 2);
+        }
+
+        function drawAliens() {
+            aliens.forEach(alien => {
+                ctx.drawImage(alien.image, alien.x - alien.size, alien.y - alien.size, alien.size * 2, alien.size * 2);
+            });
+        }
+
+        function drawBullets() {
+            bullets.forEach(bullet => {
+                ctx.fillStyle = 'yellow';
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+            drawAliens();
+            drawBullets();
+        }
+
+        function update() {
+            if (isPaused) return;
+
+            aliens.forEach((alien, index) => {
+                const dx = player.x - alien.x;
+                const dy = player.y - alien.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < player.size + alien.size) {
+                    showGameOver();
+                    return;
+                }
+
+                alien.x += dx / dist * alien.speed;
+                alien.y += dy / dist * alien.speed;
+            });
+
+            bullets.forEach((bullet, bIndex) => {
+                bullet.x += bullet.dx;
+                bullet.y += bullet.dy;
+
+                aliens.forEach((alien, aIndex) => {
+                    const dx = bullet.x - alien.x;
+                    const dy = bullet.y - alien.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < alien.size + 5) {
+                        aliens.splice(aIndex, 1);
+                        bullets.splice(bIndex, 1);
+                        score += 10;
+                        scoreDisplay.textContent = `Puntos: ${score}`;
+                        powerUp += 10;
+                        powerUpBar.style.width = `${(powerUp / powerUpThreshold) * 100}%`;
+                        if (powerUp >= powerUpThreshold) {
+                            powerUp = 0;
+                            powerUpBar.style.width = '0';
+                            showNextLevel();
+                        }
+                        if (Math.random() < gemChance) {
+                            // Lógica de la gema (puedes agregarla aquí)
+                        }
+                    }
+                });
+            });
+
+            draw();
+        }
+
+        function spawnAlien() {
+            if (isPaused) return;
+
+            const size = 15;
+            const x = Math.random() * canvas.width;
+            const y = -size;
+
+            // Elegir la imagen del alien según el nivel
+            const alienImageToUse = powerUp >= powerUpThreshold ? alien2Image : alienImage;
+            const speedToUse = powerUp >= powerUpThreshold ? aliensSpeed + alienSpeedIncrement : aliensSpeed;
+
+            aliens.push({ x, y, size, image: alienImageToUse, speed: speedToUse });
+        }
+
+        function shootBullet(event) {
+            if (isPaused) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            const dx = mouseX - player.x;
+            const dy = mouseY - player.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            bullets.push({ x: player.x, y: player.y, dx: dx / dist * 5, dy: dy / dist * 5 });
+        }
+
+        function showNextLevel() {
+            const nextLevelImage = new Image();
+            nextLevelImage.src = 'nextlevel.png';
+            const imageSize = Math.min(canvas.width * 0.5, canvas.height * 0.5); // Tamaño máximo del 50% del canvas
+            ctx.drawImage(nextLevelImage, canvas.width / 2 - imageSize / 2, canvas.height / 2 - imageSize / 2, imageSize, imageSize);
+
+            // Cambiar la imagen de los aliens y aumentar la velocidad después de 3 segundos
+            setTimeout(() => {
+                aliens.forEach(alien => {
+                    alien.image.src = alien2Image.src; // Cambiar la imagen de los aliens a alien2.png
+                    alien.speed += alienSpeedIncrement; // Aumentar la velocidad de los aliens
+                });
+                aliensSpeed += alienSpeedIncrement; // Aumentar la velocidad base de todos los aliens
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }, 3000);
+        }
+
+        function showGameOver() {
+            overlay.classList.add('active');
+            finalScoreDisplay.textContent = score;
+            isPaused = true; // Pausar el juego al mostrar el overlay
+        }
+
+        function restartGame() {
+            score = 0;
+            scoreDisplay.textContent = 'Puntos: 0';
+            powerUp = 0;
+            powerUpBar.style.width = '0';
+            aliens.length = 0; // Limpiar el array de aliens
+            bullets.length = 0; // Limpiar el array de balas
+            overlay.classList.remove('active');
+            isPaused = false; // Reanudar el juego
+        }
+
+        function returnToMenu() {
+            // Limpiar localStorage antes de ir al menú para una nueva selección
+            localStorage.removeItem('selectedCharacter');
+            window.location.href = 'menu.html'; // Redirigir al menú
+        }
+
+        pauseButton.addEventListener('click', () => {
+            isPaused = !isPaused;
+        });
+
+        canvas.addEventListener('click', shootBullet);
+
+        retryButton.addEventListener('click', restartGame);
+        menuButton.addEventListener('click', returnToMenu);
+
+        setInterval(spawnAlien, 1000);
+        setInterval(update, 1000 / 60);
+    </script>
+</body>
+</html>
