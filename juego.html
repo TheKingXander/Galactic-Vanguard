@@ -130,8 +130,8 @@
         let isPaused = false;
         let powerUp = 0;
         const powerUpThreshold = 1000;
-        let aliensSpeed = 1.2; // Velocidad inicial de los aliens
-        const alienSpeedIncrement = 0.1; // Incremento de velocidad por nivel
+        let aliensSpeed = 1.0; // Velocidad inicial de los aliens
+        const alienSpeedIncrement = 0.5; // Incremento de velocidad por nivel
         const gemChance = 0.05;
 
         function resizeCanvas() {
@@ -144,7 +144,7 @@
         const player = {
             x: canvas.width / 2,
             y: canvas.height - 50,
-            size: 30,
+            size: 35,
             image: new Image()
         };
 
@@ -222,9 +222,9 @@
                     if (dist < alien.size + 5) {
                         aliens.splice(aIndex, 1);
                         bullets.splice(bIndex, 1);
-                        score += 10;
+                        score += 25;
                         scoreDisplay.textContent = `Puntos: ${score}`;
-                        powerUp += 10;
+                        powerUp += 25;
                         powerUpBar.style.width = `${(powerUp / powerUpThreshold) * 100}%`;
                         if (powerUp >= powerUpThreshold) {
                             powerUp = 0;
@@ -244,7 +244,7 @@
         function spawnAlien() {
             if (isPaused) return;
 
-            const size = 15;
+            const size = 25;
             const x = Math.random() * canvas.width;
             const y = -size;
 
