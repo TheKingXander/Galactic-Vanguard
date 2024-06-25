@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego de Niños y Aliens</title>
+    <title>Animación de Inicio</title>
     <style>
         body {
             margin: 0;
@@ -13,44 +13,30 @@
             height: 100vh;
             background: url('fondo.png') no-repeat center center fixed;
             background-size: cover;
-            font-family: Arial, sans-serif;
         }
-        /* Estilos adicionales según tu juego */
+        #logo {
+            width: 300px; /* Ancho aumentado del logo */
+            height: auto; /* Para mantener la proporción */
+            animation: logoAnimation 2s ease-in-out forwards; /* Animación de 2 segundos */
+        }
+        @keyframes logoAnimation {
+            0% {
+                transform: scale(0.1); /* Escala inicial */
+            }
+            100% {
+                transform: scale(1); /* Escala final */
+            }
+        }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
+    <img id="logo" src="Logo.png" alt="Logo">
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const canvas = document.getElementById('gameCanvas');
-            const ctx = canvas.getContext('2d');
-            let player = {
-                x: canvas.width / 2,
-                y: canvas.height - 50,
-                size: 30,
-                image: new Image()
-            };
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const character = urlParams.get('character');
-
-            if (character) {
-                player.image.src = character;
-            } else {
-                // Por defecto, si no se seleccionó ningún personaje
-                player.image.src = 'niño.png'; // Puedes cambiar esto al personaje por defecto que desees
-            }
-
-            player.image.onload = function () {
-                // Aquí configura el juego con el personaje seleccionado
-                // Por ejemplo, puedes empezar a dibujar el jugador:
-                ctx.drawImage(player.image, player.x - player.size, player.y - player.size, player.size * 2, player.size * 2);
-            };
-
-            // Aquí continua con el resto del juego
-            // Por ejemplo, la lógica de actualización y dibujo del juego
-        });
+        // Redirigir a menu.html después de 3 segundos
+        setTimeout(function() {
+            window.location.href = 'menu.html';
+        }, 3000);
     </script>
 </body>
 </html>
